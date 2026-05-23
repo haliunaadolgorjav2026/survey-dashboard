@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Сэтгэл ханамжийн судалгаа</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        :root { --primary: #1a3a6b; --accent: #f59e0b; --green: #10b981; --red: #ef4444; --bg: #f0f4f8; --card: #ffffff; --text: #1e293b; --muted: #64748b; }
+        body { font-family: 'Nunito', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+        /* HEADER */
+        .header { background: var(--primary); padding: 20px 36px; display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { color: #fff; font-size: 20pt; font-weight: 900; letter-spacing: 1px; }
+        .header .sub { color: #a8c4e8; font-size: 9pt; margin-top: 2px; }
+        .refresh-btn { background: #fff; color: var(--primary); border: none; padding: 7px 18px; border-radius: 8px; font-family: 'Nunito', sans-serif; font-size: 9pt; font-weight: 700; cursor: pointer; }
+
+        /* LAYOUT */
+        .container { max-width: 1100px; margin: 0 auto; padding: 28px 24px; }
+
+        /* FILTER */
+        .filter-bar { background: var(--card); border-radius: 12px; padding: 16px 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 20px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+        .filter-bar label { font-size: 9pt; font-weight: 700; color: var(--primary); }
+        .filter-bar input[type="date"] { border: 1.5px solid #dce4f0; border-radius: 8px; padding: 6px 12px; font-family: 'Nunito', sans-serif; font-size: 9pt; color: var(--text); }
+        .filter-btn { background: var(--primary); color: #fff; border: none; padding: 7px 18px; border-radius: 8px; font-family: 'Nunito', sans-serif; font-size: 9pt; font-weight: 700; cursor: pointer; }
+        .filter-btn.reset { background: #e2e8f0; color: var(--text); }
+        .filter-count { font-size: 8.5pt; color: var(--muted); margin-left: auto; }
+
+        /* SCORE CARDS */
+        .score-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
+        .score-card { background: var(--card); border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-top: 4px solid var(--primary); text-align: center; }
+        .score-card.green { border-top-color: var(--green); }
+        .score-card.amber { border-top-color: var(--accent); }
+        .score-card .label { font-size: 7.5pt; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; font-weight: 700; margin-bottom: 8px; }
+        .score-card .value { font-size: 28pt; font-weight: 900; color: var(--primary); line-height: 1; }
+        .score-card.green .value { color: var(--green); }
+        .score-card.amber .value { color: var(--accent); }
+        .score-card .unit { font-size: 9pt; color: var(--muted); margin-top: 4px; }
+
+        /* CHART CARD */
+        .chart-card { background: var(--card); border-radius: 12px; padding: 20px 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 20px; }
+        .chart-title { font-size: 10pt; font-weight: 800; color: var(--primary); margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0; }
+
+        /* BAR */
+        .bar-item { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+        .bar-label { font-size: 8pt; color: var(--text); width: 260px; flex-shrink: 0; font-weight: 600; line-height: 1.3; }
+        .bar-track { flex: 1; background: #e2e8f0; border-radius: 99px; height: 24px; overflow: hidden; }
+        .bar-fill { height: 100%; border-radius: 99px; display: flex; align-items: center; padding-left: 10px; color: #fff; font-size: 8.5pt; font-weight: 700; min-width: 40px; transition: width 0.6s ease; }
+        .bar-score { font-size: 10pt; font-weight: 800; color: var(--primary); width: 40px; text-align: right; }
+
+        /* NPS */
+        .nps-grid { display: grid; grid-template-columns: 160px 1fr 1fr 1fr; gap: 20px; align-items: center; }
+        .nps-big { font-size: 52pt; font-weight: 900; line-height: 1; text-align: center; }
+        .nps-big.positive { color: var(--green); }
+        .nps-big.neutral  { color: var(--accent); }
+        .nps-big.negative { color: var(--red); }
+        .nps-sublabel { font-size: 8pt; color: var(--muted); font-weight: 700; text-align: center; margin-top: 4px; }
+        .nps-segment { border-radius: 12px; padding: 16px; text-align: center; }
+        .nps-segment.promoter  { background: #d1fae5; border: 2px solid var(--green); }
+        .nps-segment.passive   { background: #fef3c7; border: 2px solid var(--accent); }
+        .nps-segment.detractor { background: #fee2e2; border: 2px solid var(--red); }
+        .nps-segment .seg-title { font-size: 8pt; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+        .nps-segment.promoter  .seg-title { color: var(--green); }
+        .nps-segment.passive   .seg-title { color: #d97706; }
+        .nps-segment.detractor .seg-title { color: var(--red); }
+        .nps-segment .seg-range { font-size: 7.5pt; color: var(--muted); margin-bottom: 8px; }
+        .nps-segment .seg-count { font-size: 22pt; font-weight: 900; }
+        .nps-segment.promoter  .seg-count { color: var(--green); }
+        .nps-segment.passive   .seg-count { color: #d97706; }
+        .nps-segment.detractor .seg-count { color: var(--red); }
+        .nps-segment .seg-pct { font-size: 9pt; color: var(--muted); font-weight: 600; }
+        .nps-bar { height: 14px; border-radius: 99px; background: linear-gradient(to right, var(--red) 0%, var(--accent) 60%, var(--green) 100%); position: relative; margin: 10px 0 4px; grid-column: 1 / -1; }
+        .nps-ptr { position: absolute; top: -6px; width: 26px; height: 26px; background: #fff; border: 3px solid var(--primary); border-radius: 50%; transform: translateX(-50%); transition: left 0.8s ease; }
+
+        /* FEEDBACK TABLE */
+        .feedback-table { width: 100%; border-collapse: collapse; }
+        .feedback-table th { background: var(--primary); color: #fff; font-size: 8pt; padding: 10px 12px; text-align: left; }
+        .feedback-table td { font-size: 8.5pt; padding: 9px 12px; border-bottom: 1px solid #e2e8f0; color: var(--text); vertical-align: top; }
+        .feedback-table tr:nth-child(even) td { background: #f8fafc; }
+
+        /* STATES */
+        .loading { text-align: center; padding: 60px; color: var(--muted); font-size: 11pt; }
+        .spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .error-box { background: #fee2e2; border: 1px solid #fca5a5; border-radius: 8px; padding: 16px; color: #991b1b; font-size: 9pt; margin: 20px 0; }
+        .info-note { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 10px 14px; color: #1e40af; font-size: 8.5pt; margin-bottom: 16px; }
+
+        @media (max-width: 768px) {
+            .score-grid { grid-template-columns: repeat(2,1fr); }
+            .nps-grid { grid-template-columns: 1fr 1fr; }
+            .bar-label { width: 140px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div>
+        <h1 id="page-title">Сэтгэл ханамжийн судалгаа</h1>
+        <div class="sub" id="updated-time">Үйлчлүүлэгчдийн үнэлгээний тайлан</div>
+    </div>
+    <button class="refresh-btn" onclick="loadData()">↻ Шинэчлэх</button>
+</div>
+
+<div class="container">
+    <div id="loading" class="loading"><div class="spinner"></div>Өгөгдөл татаж байна...</div>
+    <div id="error-div" style="display:none" class="error-box"></div>
+
+    <div id="dashboard" style="display:none">
+
+        <!-- DATE FILTER -->
+        <div class="filter-bar">
+            <label>📅 Эхлэх:</label>
+            <input type="date" id="date-from" />
+            <label>Дуусах:</label>
+            <input type="date" id="date-to" />
+            <button class="filter-btn" onclick="applyFilter()">Шүүх</button>
+            <button class="filter-btn reset" onclick="resetFilter()">Цэвэрлэх</button>
+            <div class="filter-count" id="filter-count"></div>
+        </div>
+
+        <!-- SCORE CARDS -->
+        <div class="score-grid">
+            <div class="score-card">
+                <div class="label">Нийт хариулт</div>
+                <div class="value" id="total-count">—</div>
+                <div class="unit">үйлчлүүлэгч</div>
+            </div>
+            <div class="score-card green">
+                <div class="label">Нийт дундаж оноо</div>
+                <div class="value" id="overall-avg">—</div>
+                <div class="unit">/ 5.0 оноо</div>
+            </div>
+            <div class="score-card amber">
+                <div class="label">NPS оноо</div>
+                <div class="value" id="nps-card">—</div>
+                <div class="unit" id="nps-card-label">(-100 ~ +100)</div>
+            </div>
+            <div class="score-card green">
+                <div class="label">CSAT — Сэтгэл ханамж</div>
+                <div class="value" id="csat-card">—</div>
+                <div class="unit">% сэтгэл хангалуун</div>
+            </div>
+        </div>
+
+        <!-- DYNAMIC BAR CHARTS -->
+        <div class="chart-card">
+            <div class="chart-title">📊 Асуулт бүрийн дундаж оноо (5-аас)</div>
+            <div id="bar-note" class="info-note" style="display:none"></div>
+            <div id="bar-charts"></div>
+        </div>
+
+        <!-- NPS -->
+        <div class="chart-card">
+            <div class="chart-title">⭐ Найз танилдаа санал болгох магадлал — NPS</div>
+            <div class="nps-grid">
+                <div>
+                    <div class="nps-big" id="nps-big">—</div>
+                    <div class="nps-sublabel">NPS оноо</div>
+                    <div id="nps-badge" style="margin-top:8px;padding:4px 10px;border-radius:99px;font-size:8pt;font-weight:800;display:inline-block"></div>
+                </div>
+                <div class="nps-segment promoter">
+                    <div class="seg-title">Promoter</div>
+                    <div class="seg-range">9-10 оноо</div>
+                    <div class="seg-count" id="promoter-count">0</div>
+                    <div class="seg-pct"   id="promoter-pct">0%</div>
+                </div>
+                <div class="nps-segment passive">
+                    <div class="seg-title">Passive</div>
+                    <div class="seg-range">7-8 оноо</div>
+                    <div class="seg-count" id="passive-count">0</div>
+                    <div class="seg-pct"   id="passive-pct">0%</div>
+                </div>
+                <div class="nps-segment detractor">
+                    <div class="seg-title">Detractor</div>
+                    <div class="seg-range">0-6 оноо</div>
+                    <div class="seg-count" id="detractor-count">0</div>
+                    <div class="seg-pct"   id="detractor-pct">0%</div>
+                </div>
+                <div class="nps-bar" style="grid-column:1/-1">
+                    <div class="nps-ptr" id="nps-ptr" style="left:50%"></div>
+                </div>
+                <div style="grid-column:1/-1;display:flex;justify-content:space-between;font-size:7.5pt;color:var(--muted)">
+                    <span>-100 (Хамгийн муу)</span><span>0</span><span>+100 (Хамгийн сайн)</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- FEEDBACK TABLE -->
+        <div class="chart-card">
+            <div class="chart-title">💬 Үйлчлүүлэгчдийн санал хүсэлт</div>
+            <table class="feedback-table">
+                <thead>
+                    <tr>
+                        <th style="width:40px">№</th>
+                        <th style="width:120px">Огноо</th>
+                        <th id="feedback-col-header">Санал хүсэлт</th>
+                    </tr>
+                </thead>
+                <tbody id="feedback-body"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+// ============================================================
+//  ТОХИРГОО — зөвхөн SHEET_ID-г солино, өөр юм хүрэхгүй
+// ============================================================
+const SHEET_ID = '1anWYiOvogk8RniIRlo-a7xA5E-zyg2pUorYHosOGJBk';
+
+// NPS болон Feedback баганыг таних түлхүүр үгс (form-д өөрчлөхгүй байхыг зөвлөнө)
+const NPS_KEYWORDS      = ['санал болгох', 'найз', 'танил'];
+const FEEDBACK_KEYWORDS = ['сайжруулбал', 'гомдол', 'санал', 'хүсэлт', 'нэмэлт'];
+const SKIP_KEYWORDS     = ['timestamp', 'огноо', 'цаг'];
+
+// Оноо давхардахгүй байх тоон утгын хязгаар
+const RATING_MIN = 1;
+const RATING_MAX = 10; // NPS 0-10, rating 1-5 хоёуланг багтаана
+
+const BAR_COLORS = ['#1a3a6b','#2563eb','#7c3aed','#db2777','#059669','#0891b2','#d97706','#dc2626'];
+// ============================================================
+
+let ALL_ROWS = [];
+let DETECTED_COLS = { rating: [], nps: null, feedback: null };
+
+function parseDate(v) {
+    if (!v) return null;
+    const m = String(v).match(/Date\((\d+),(\d+),(\d+)/);
+    if (m) return new Date(parseInt(m[1]), parseInt(m[2]), parseInt(m[3]));
+    return new Date(v);
+}
+
+function colMatches(colName, keywords) {
+    const lower = colName.toLowerCase();
+    return keywords.some(kw => lower.includes(kw));
+}
+
+function isSkipCol(colName) {
+    const lower = colName.toLowerCase();
+    return SKIP_KEYWORDS.some(kw => lower.includes(kw));
+}
+
+// Баганыг тоон утга агуулсан эсэхийг rows-оос шалгана
+function isNumericCol(rows, colName) {
+    const vals = rows.map(r => r[colName]).filter(v => v !== null && v !== undefined);
+    if (!vals.length) return false;
+    const numericCount = vals.filter(v => !isNaN(Number(v))).length;
+    return numericCount / vals.length >= 0.7; // 70%-с дээш тоо бол тоон багана
+}
+
+function detectColumns(cols, rows) {
+    const result = { rating: [], nps: null, feedback: null };
+    for (const col of cols) {
+        if (!col || isSkipCol(col)) continue;
+        if (colMatches(col, NPS_KEYWORDS)) {
+            result.nps = col;
+            continue;
+        }
+        if (colMatches(col, FEEDBACK_KEYWORDS)) {
+            result.feedback = col;
+            continue;
+        }
+        // Тоон утгатай бол rating багана гэж үзнэ
+        if (isNumericCol(rows, col)) {
+            result.rating.push(col);
+        }
+    }
+    return result;
+}
+
+async function loadData() {
+    document.getElementById('loading').style.display = 'block';
+    document.getElementById('dashboard').style.display = 'none';
+    document.getElementById('error-div').style.display = 'none';
+    try {
+        const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
+        const res  = await fetch(url);
+        const text = await res.text();
+        const json = JSON.parse(text.substring(text.indexOf('{'), text.lastIndexOf(')') ));
+        const table = json.table;
+        if (!table || !table.rows || !table.rows.length) throw new Error('Өгөгдөл байхгүй байна');
+
+        const cols = table.cols.map(c => c.label ? c.label.trim() : '');
+
+        ALL_ROWS = table.rows.map(r => {
+            const obj = {};
+            cols.forEach((c, i) => {
+                const cell = r.c[i];
+                obj[c] = (c === 'Timestamp' || c === 'Огноо')
+                    ? (cell ? parseDate(cell.v) : null)
+                    : (cell ? cell.v : null);
+            });
+            return obj;
+        });
+
+        // Баганыг автоматаар илрүүлнэ
+        DETECTED_COLS = detectColumns(cols, ALL_ROWS);
+
+        // Feedback header нэр шинэчлэх
+        if (DETECTED_COLS.feedback) {
+            document.getElementById('feedback-col-header').textContent = DETECTED_COLS.feedback;
+        }
+
+        document.getElementById('updated-time').textContent =
+            'Сүүлд шинэчлэгдсэн: ' + new Date().toLocaleString('mn-MN');
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('dashboard').style.display = 'block';
+        applyFilter();
+    } catch(e) {
+        console.error(e);
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('error-div').style.display = 'block';
+        document.getElementById('error-div').textContent = '⚠️ Алдаа: ' + e.message;
+    }
+}
+
+function applyFilter() {
+    const fromVal = document.getElementById('date-from').value;
+    const toVal   = document.getElementById('date-to').value;
+    let rows = [...ALL_ROWS];
+    const tsKey = Object.keys(rows[0] || {}).find(k => k === 'Timestamp' || k === 'Огноо') || 'Timestamp';
+    if (fromVal) { const f = new Date(fromVal); rows = rows.filter(r => r[tsKey] && r[tsKey] >= f); }
+    if (toVal)   { const t = new Date(toVal); t.setHours(23,59,59); rows = rows.filter(r => r[tsKey] && r[tsKey] <= t); }
+    document.getElementById('filter-count').textContent =
+        (fromVal || toVal) ? `Нийт ${ALL_ROWS.length}-аас ${rows.length} хариулт` : `Нийт ${ALL_ROWS.length} хариулт`;
+    render(rows);
+}
+
+function resetFilter() {
+    document.getElementById('date-from').value = '';
+    document.getElementById('date-to').value   = '';
+    applyFilter();
+}
+
+function render(rows) {
+    const count = rows.length;
+    document.getElementById('total-count').textContent = count;
+    if (count === 0) {
+        ['overall-avg','nps-card','nps-big','csat-card'].forEach(id => {
+            const el = document.getElementById(id); if (el) el.textContent = '—';
+        });
+        document.getElementById('bar-charts').innerHTML =
+            '<p style="color:var(--muted);padding:20px 0;font-size:9pt">Энэ хугацаанд хариулт байхгүй байна</p>';
+        document.getElementById('feedback-body').innerHTML =
+            '<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:20px">Хариулт байхгүй</td></tr>';
+        return;
+    }
+
+    // ── ДИНАМИК BAR CHARTS ──────────────────────────────────
+    const ratingCols = DETECTED_COLS.rating;
+    const noteEl = document.getElementById('bar-note');
+
+    if (!ratingCols.length) {
+        noteEl.style.display = 'block';
+        noteEl.textContent = 'ℹ️ Тоон үнэлгээний асуулт илрүүлсэнгүй. Form дээр 1-5 оноо авах асуултуудыг нэмсний дараа энд харагдана.';
+        document.getElementById('bar-charts').innerHTML = '';
+    } else {
+        noteEl.style.display = 'none';
+        const avgs = [];
+        const barHtml = ratingCols.map((col, i) => {
+            const vals = rows.map(r => r[col])
+                .filter(v => v !== null && v !== undefined && !isNaN(Number(v)))
+                .map(Number)
+                .filter(v => v >= RATING_MIN && v <= RATING_MAX);
+            if (!vals.length) return '';
+            const avg = vals.reduce((a,b) => a+b, 0) / vals.length;
+            const maxVal = vals.some(v => v > 5) ? 10 : 5; // NPS тусад, rating 5
+            avgs.push({ avg, maxVal });
+            const pct = (avg / maxVal) * 100;
+            const color = BAR_COLORS[i % BAR_COLORS.length];
+            return `<div class="bar-item">
+                <div class="bar-label">${col}</div>
+                <div class="bar-track">
+                    <div class="bar-fill" style="width:${pct.toFixed(1)}%;background:${color}">${avg.toFixed(1)}</div>
+                </div>
+                <div class="bar-score">${avg.toFixed(1)}</div>
+            </div>`;
+        }).join('');
+        document.getElementById('bar-charts').innerHTML = barHtml;
+
+        // Нийт дундаж (зөвхөн 1-5 оноотой баганаас)
+        const ratingAvgs = avgs.filter(a => a.maxVal === 5).map(a => a.avg);
+        if (ratingAvgs.length) {
+            const overall = ratingAvgs.reduce((a,b) => a+b, 0) / ratingAvgs.length;
+            document.getElementById('overall-avg').textContent = overall.toFixed(1);
+        }
+    }
+
+    // ── NPS ────────────────────────────────────────────────
+    const npsKey = DETECTED_COLS.nps;
+    if (npsKey) {
+        const npsVals = rows.map(r => r[npsKey])
+            .filter(v => v !== null && !isNaN(Number(v))).map(Number);
+        if (npsVals.length) {
+            const promoters  = npsVals.filter(v => v >= 9).length;
+            const passives   = npsVals.filter(v => v >= 7 && v <= 8).length;
+            const detractors = npsVals.filter(v => v <= 6).length;
+            const total      = npsVals.length;
+            const promoterPct  = Math.round((promoters  / total) * 100);
+            const passivePct   = Math.round((passives   / total) * 100);
+            const detractorPct = Math.round((detractors / total) * 100);
+            const nps = promoterPct - detractorPct;
+
+            document.getElementById('promoter-count').textContent  = promoters;
+            document.getElementById('promoter-pct').textContent    = promoterPct + '%';
+            document.getElementById('passive-count').textContent   = passives;
+            document.getElementById('passive-pct').textContent     = passivePct + '%';
+            document.getElementById('detractor-count').textContent = detractors;
+            document.getElementById('detractor-pct').textContent   = detractorPct + '%';
+
+            const npsEl = document.getElementById('nps-big');
+            npsEl.textContent = (nps > 0 ? '+' : '') + nps;
+            npsEl.className   = 'nps-big ' + (nps > 30 ? 'positive' : nps > 0 ? 'neutral' : 'negative');
+            document.getElementById('nps-card').textContent = (nps > 0 ? '+' : '') + nps;
+            document.getElementById('nps-ptr').style.left   = ((nps + 100) / 200 * 100) + '%';
+
+            let npsLabel, npsBg, npsColor;
+            if      (nps >= 50) { npsLabel = '🌟 Гайхалтай сайн';          npsBg = '#d1fae5'; npsColor = '#059669'; }
+            else if (nps >= 30) { npsLabel = '✅ Сайн';                     npsBg = '#d1fae5'; npsColor = '#059669'; }
+            else if (nps >= 1)  { npsLabel = '👍 Дунд зэрэг сайн';         npsBg = '#fef3c7'; npsColor = '#d97706'; }
+            else if (nps === 0) { npsLabel = '➖ Тэнцвэртэй';               npsBg = '#f1f5f9'; npsColor = '#64748b'; }
+            else if (nps >= -30){ npsLabel = '⚠️ Анхаарах хэрэгтэй';       npsBg = '#fee2e2'; npsColor = '#dc2626'; }
+            else                { npsLabel = '🚨 Яаралтай сайжруулах';      npsBg = '#fee2e2'; npsColor = '#dc2626'; }
+
+            document.getElementById('nps-card-label').textContent = npsLabel;
+            const badge = document.getElementById('nps-badge');
+            badge.textContent      = npsLabel;
+            badge.style.background = npsBg;
+            badge.style.color      = npsColor;
+        }
+    }
+
+    // ── CSAT ───────────────────────────────────────────────
+    // "сэтгэл хангалуун" гэсэн түлхүүр үгтэй баганаас тооцно
+    const csatKey = Object.keys(rows[0] || {}).find(k => k.toLowerCase().includes('сэтгэл хангалуун'));
+    if (csatKey) {
+        const csatVals = rows.map(r => r[csatKey]).filter(v => v !== null && !isNaN(Number(v))).map(Number);
+        if (csatVals.length) {
+            const satisfied = csatVals.filter(v => v >= 4).length;
+            const csatPct   = Math.round((satisfied / csatVals.length) * 100);
+            const csatEl    = document.getElementById('csat-card');
+            csatEl.textContent  = csatPct;
+            csatEl.style.color  = csatPct >= 80 ? 'var(--green)' : csatPct >= 60 ? '#d97706' : 'var(--red)';
+        }
+    }
+
+    // ── FEEDBACK TABLE ─────────────────────────────────────
+    const fbKey = DETECTED_COLS.feedback;
+    const tsKey = Object.keys(rows[0] || {}).find(k => k === 'Timestamp' || k === 'Огноо') || 'Timestamp';
+    if (fbKey) {
+        const html = rows
+            .filter(r => r[fbKey] && String(r[fbKey]).trim())
+            .map((r, i) => {
+                const ts = r[tsKey];
+                const d  = ts instanceof Date && !isNaN(ts)
+                    ? ts.toLocaleDateString('mn-MN', {year:'numeric',month:'2-digit',day:'2-digit'}) : '—';
+                return `<tr><td>${i+1}</td><td>${d}</td><td>${r[fbKey]}</td></tr>`;
+            }).join('');
+        document.getElementById('feedback-body').innerHTML = html ||
+            '<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:16px">Санал хүсэлт байхгүй</td></tr>';
+    } else {
+        document.getElementById('feedback-body').innerHTML =
+            '<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:16px">Санал хүсэлтийн багана илрүүлсэнгүй</td></tr>';
+    }
+}
+
+loadData();
+</script>
+</body>
+</html>
